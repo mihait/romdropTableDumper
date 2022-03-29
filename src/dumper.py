@@ -50,6 +50,15 @@ class RomDumper():
             print("scaling lookup format: %s " % data_format)
         return self._translate_format(data_format)
 
+    def _table_tofr_expr(self, scaling_table):
+        for i in self.defs_json['roms']['rom']['scaling']:
+            if i['@name'] == scaling_table:
+                toexpr = i['@toexpr']
+                frexpr = i['@frexpr']
+        if self.verbose:
+            print("scaling to/fr expr: {} ---  {}".format(toexpr, frexpr))
+        return (toexpr, frexpr)
+
     def list_category_and_name(self):
         for i in self.defs_json['roms']['rom']['table']:
             if self.verbose:
@@ -63,13 +72,14 @@ class RomDumper():
             if i['@category'] == category and i['@name'] == name:
                 desired_table = i
 
+        if not 'desired_table' in locals():
+            print("table not found! check input and def.")
+            return
+
         if self.verbose:
-            if 'desired_table' in locals():
-                print("Found: {} <---> {}  LEN: {}".format(category, name,desired_table['@elements']))
-                print(json.dumps(desired_table, indent=4, sort_keys=True))
-                print("Data format: %s (from scaling table)" % self._table_format(desired_table['@scaling']))
-            else:
-                print("Not found: %s" % name)
+            print("Found: {} <---> {}  LEN: {}".format(category, name,desired_table['@elements']))
+            print(json.dumps(desired_table, indent=4, sort_keys=True))
+            print("Data format: %s (from scaling table)" % self._table_format(desired_table['@scaling']))
 
         if desired_table['@type'] == "1D":
             print("\nTable dump\n%s\n----" % name)
@@ -119,8 +129,14 @@ class RomDumper():
 
             tr_data=[]
 
+            (toexpr,frexpr) = self._table_tofr_expr(desired_table['@scaling'])
+
+            if self.verbose:
+                print("table toexpr: {} frexpr: {}".format(toexpr,frexpr))
+
             if desired_table['@swapxy'] == 'true':
                 #
+                #print(tdata)
                 for i in range(len(ydata)):
                     line=[]
                     k = i
@@ -129,14 +145,15 @@ class RomDumper():
                         k+=len(ydata)
                     tr_data.append(line)
             else:
-                for i in range(len(xdata)):
+                for i in range(len(ydata)):
                     line=[]
-                    for j in range(len(ydata)):
+                    for j in range(len(xdata)):
                         line.append("{:{fmt}}".format(*tdata[i+j], fmt = tdfmt))
-                    tr_data.append()
+                    tr_data.append(line)
+                print(tr_data)
 
             rjst = 9
-            # print table
+            #print table
             print("-x-".rjust(rjst), end='')
 
             # x axis top
@@ -149,7 +166,13 @@ class RomDumper():
                 print("{:{fmt}} ".format(*ydata[z], fmt=ytfmt).rjust(rjst), end ='')
                 a = tr_data[z]
                 for l in a:
-                    print("{}".format(l).rjust(rjst), end='')
+                    if toexpr == 'x':
+                        print("{}".format(l).rjust(rjst), end='')
+                    else:
+                        #scaling table has expr - compute it
+                        x = float(l)
+                        expr = eval(str(toexpr))
+                        print("{:{fmt}}".format(expr, fmt = tdfmt).rjust(rjst), end='')
                 print("\n")
                 z+=1
             return
