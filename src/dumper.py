@@ -144,7 +144,9 @@ class RomDumper():
 
             if desired_table['table']['@type'] == 'X Axis':
                 xdata = self._get_table_data(data_addr = desired_table['table']['@address'], data_len = desired_table['table']['@elements'], scaling = desired_table['table']['@scaling'])
-                xtfmt = self._table_format(desired_table['@scaling'])
+                #xtfmt = self._table_format(desired_table['@scaling'])
+                #ignore x, y axis formatting until we figure out why it's .0f in some cases
+                xtfmt = '.3f'
                 for i in xdata:
                     print("{0:>6{fmt}}".format(i,fmt=xtfmt), end = '')
                 print("")
@@ -154,7 +156,9 @@ class RomDumper():
                 return
             if desired_table['table']['@type'] == 'Y Axis':
                 ydata = self._get_table_data(data_addr = desired_table['table']['@address'], data_len = desired_table['table']['@elements'], scaling = desired_table['table']['@scaling'])
-                ytfmt = self._table_format(desired_table['@scaling'])
+                #ytfmt = self._table_format(desired_table['@scaling'])
+                #ignore x, y axis formatting until we figure out why it's .0f in some cases
+                ytfmt = '.3f'
                 for i in range(len(ydata)):
                     print(" {:>8{fmt}}".format(ydata[i], fmt=ytfmt), end = '')
                     print(" {:>5{fmt}}".format(tdata[i], fmt=ytfmt))
@@ -166,10 +170,15 @@ class RomDumper():
             for t in desired_table['table']:
                 if t['@type'] == 'X Axis':
                     xdata = self._get_table_data(data_addr = t['@address'], data_len = t['@elements'], scaling = t['@scaling'])
-                    xtfmt = self._table_format(desired_table['@scaling'])
+                    #xtfmt = self._table_format(desired_table['@scaling'])
+                    #ignore x, y axis formatting until we figure out why it's .0f in some cases
+                    xtfmt = '.3f'
                 if t['@type'] == 'Y Axis':
                     ydata = self._get_table_data(data_addr = t['@address'], data_len = t['@elements'], scaling = t['@scaling'])
-                    ytfmt = self._table_format(desired_table['@scaling'])
+                    #ytfmt = self._table_format(desired_table['@scaling'])
+                    #ignore x, y axis formatting until we figure out why it's .0f in some cases
+                    ytfmt = '.3f'
+
             
             tdfmt = self._table_format(desired_table['@scaling'])
 
@@ -199,8 +208,7 @@ class RomDumper():
 
             # x axis top
             for i in xdata:
-                #for some reason, some defs have .0f format - just force .3f until we'll figure it out
-                print("{:{fmt}}".format(i, fmt='.3f').rjust(rjst), end = '')
+                print("{:{fmt}}".format(i, fmt=xtfmt).rjust(rjst), end = '')
             print("\n")
             
             z = 0
