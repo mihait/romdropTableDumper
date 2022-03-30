@@ -199,7 +199,8 @@ class RomDumper():
 
             # x axis top
             for i in xdata:
-                print("{:{fmt}}".format(i, fmt=xtfmt).rjust(rjst), end = '')
+                #for some reason, some defs have .0f format - just force .3f until we'll figure it out
+                print("{:{fmt}}".format(i, fmt='.3f').rjust(rjst), end = '')
             print("\n")
             
             z = 0
