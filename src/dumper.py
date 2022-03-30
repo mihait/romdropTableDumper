@@ -10,7 +10,7 @@ class RomDumper():
         self.xml_def_file = xml_def_file
         self.verbose = verbose
 
-        #load rom 
+        #load rom
         with open(self.rom_file, 'rb') as r:
             self.rom_data = bytearray(r.read())
         #parse xml and convert to json
@@ -26,7 +26,7 @@ class RomDumper():
                 '%0.3f': ".3f",
                 '%0.4f': ".4f",
                 '%08x' : "08x",
-                '%d':    ".3f"}.get(tformat, '.3f')
+                '%d':    ".0f"}.get(tformat, '.3f')
 
     def _type_len(self, tlen):
         return {
@@ -64,12 +64,12 @@ class RomDumper():
 
         start  = int(data_addr, 16)
         tsize  = start +  (int(data_len) * tlen)
-        tdata  = self.rom_data[start:tsize] 
+        tdata  = self.rom_data[start:tsize]
 
         n = 0
         result = []
         tfmt = {'little': "<", 'big': ">"}.get(tprops['endian']) + self._type_fmt(tprops['storagetype'])
-        
+
         for i in range(int(data_len)):
             buff = struct.unpack(tfmt, tdata[n:n+tlen])
             if tprops['format'] == '%08x':
@@ -88,19 +88,10 @@ class RomDumper():
     def _table_format(self, scaling_table):
         for i in self.defs_json['roms']['rom']['scaling']:
             if i['@name'] == scaling_table:
-                data_format = i['@format'] 
+                data_format = i['@format']
         if self.verbose:
             print("scaling lookup format: %s " % data_format)
         return self._translate_format(data_format)
-
-    def _table_tofr_expr(self, scaling_table):
-        for i in self.defs_json['roms']['rom']['scaling']:
-            if i['@name'] == scaling_table:
-                toexpr = i['@toexpr']
-                frexpr = i['@frexpr']
-        if self.verbose:
-            print("scaling to/fr expr: {} ---  {}".format(toexpr, frexpr))
-        return (toexpr, frexpr)
 
     def list_category_and_name(self):
         for i in self.defs_json['roms']['rom']['table']:
@@ -108,7 +99,6 @@ class RomDumper():
                 print("./romdumper.py --category '{}' --table-name '{}'  ###table type: {}".format(i['@category'], i['@name'], i['@type']))
             else:
                 print("./romdumper.py --category '{}' --table-name '{}'".format(i['@category'], i['@name']))
-
 
     def dump_table(self, category, name):
         for i in self.defs_json['roms']['rom']['table']:
@@ -144,9 +134,7 @@ class RomDumper():
 
             if desired_table['table']['@type'] == 'X Axis':
                 xdata = self._get_table_data(data_addr = desired_table['table']['@address'], data_len = desired_table['table']['@elements'], scaling = desired_table['table']['@scaling'])
-                #xtfmt = self._table_format(desired_table['@scaling'])
-                #ignore x, y axis formatting until we figure out why it's .0f in some cases
-                xtfmt = '.3f'
+                xtfmt = self._table_format(desired_table['table']['@scaling'])
                 for i in xdata:
                     print("{0:>6{fmt}}".format(i,fmt=xtfmt), end = '')
                 print("")
@@ -156,12 +144,10 @@ class RomDumper():
                 return
             if desired_table['table']['@type'] == 'Y Axis':
                 ydata = self._get_table_data(data_addr = desired_table['table']['@address'], data_len = desired_table['table']['@elements'], scaling = desired_table['table']['@scaling'])
-                #ytfmt = self._table_format(desired_table['@scaling'])
-                #ignore x, y axis formatting until we figure out why it's .0f in some cases
-                ytfmt = '.3f'
+                ytfmt = self._table_format(desired_table['table']['@scaling'])
                 for i in range(len(ydata)):
                     print(" {:>8{fmt}}".format(ydata[i], fmt=ytfmt), end = '')
-                    print(" {:>5{fmt}}".format(tdata[i], fmt=ytfmt))
+                    print(" {:>5{fmt}}".format(tdata[i], fmt=tdfmt))
                 return
 
         #3D table
@@ -170,23 +156,17 @@ class RomDumper():
             for t in desired_table['table']:
                 if t['@type'] == 'X Axis':
                     xdata = self._get_table_data(data_addr = t['@address'], data_len = t['@elements'], scaling = t['@scaling'])
-                    #xtfmt = self._table_format(desired_table['@scaling'])
-                    #ignore x, y axis formatting until we figure out why it's .0f in some cases
-                    xtfmt = '.3f'
+                    xtfmt = self._table_format(t['@scaling'])
                 if t['@type'] == 'Y Axis':
                     ydata = self._get_table_data(data_addr = t['@address'], data_len = t['@elements'], scaling = t['@scaling'])
-                    #ytfmt = self._table_format(desired_table['@scaling'])
-                    #ignore x, y axis formatting until we figure out why it's .0f in some cases
-                    ytfmt = '.3f'
+                    ytfmt = self._table_format(t['@scaling'])
 
-            
             tdfmt = self._table_format(desired_table['@scaling'])
 
             tr_data=[]
 
             if desired_table['@swapxy'] == 'true':
                 #
-                #print(tdata)
                 for i in range(len(ydata)):
                     line=[]
                     k = i
@@ -210,7 +190,7 @@ class RomDumper():
             for i in xdata:
                 print("{:{fmt}}".format(i, fmt=xtfmt).rjust(rjst), end = '')
             print("\n")
-            
+
             z = 0
             for j in ydata:
                 print("{:{fmt}} ".format(ydata[z], fmt=ytfmt).rjust(rjst), end ='')
@@ -233,5 +213,4 @@ class RomDumper():
                 print("---END---")
             sys.stdout = original_stdout
         print("Done!")
-
 
