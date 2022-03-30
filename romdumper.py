@@ -14,29 +14,36 @@ if len(current_path) > 0:
 from src import *
 
 #romdrop metadata file
-def_file = '/path/to/romdrop/metadata/l831eg.xml'
+def_file = 'path/to/romdrop/metadata/l831eg.xml'
+
 #patched rom file
-rom_file = '/path/to/roms/L831EG_Rev_xxxxx.bin'
+rom_file = '/path/to/roms/L831EG_Rev_xyz.bin'
+
+#rom_all_text dump file
+dump_file = 'current_rom_dump.txt'
 
 #init
 rd = dumper.RomDumper(rom_file=rom_file, xml_def_file=def_file)
 
 #uncomment this line and comment the above for extra output
+#warning verbose output will appear in the dump file
 #rd = dumper.RomDumper(rom_file=rom_file, xml_def_file=def_file, verbose = True)
 
 def show_help():
     print("WARNING - EXPERIMENTAL !\n")
     print("Usage:")
     print("./romdumper.py -c 'category' -t 'name'")
-    print("./romdumper.py -l\n")
+    print("./romdumper.py -l")
+    print("./romdumper.py -a\n")
     print("Edit romdumper.py and set the paths to your rom and definition!")
 
 def main(argv):
     category = ''
     name = ''
     listall = ''
+    dumpall = ''
     try:
-        opts, args = getopt.getopt(argv,"hc:t:l",["category=","table-name=","list-all"])
+        opts, args = getopt.getopt(argv,"htlac:t",["category=","table-name=","list-all","dump-all"])
     except getopt.GetoptError:
         show_help()
         sys.exit(2)
@@ -49,8 +56,13 @@ def main(argv):
             name = arg
         elif opt in ("-l", "--list-all"):
             listall = 'listall'
+        elif opt in ("-a", "--dump-all"):
+            dumpall = 'dumpall'
 
-    if listall:
+    if dumpall:
+        rd.dump_all(dump_file)
+        sys.exit(0)
+    elif listall:
         rd.list_category_and_name()
         sys.exit(0)
     elif category and name:
@@ -62,5 +74,4 @@ def main(argv):
 
 if __name__ == "__main__":
    main(sys.argv[1:])
-
 
