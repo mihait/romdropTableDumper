@@ -14,8 +14,10 @@ Usage:
 - edit romdumper.py
 - set paths to rom and definition
 
+````
 ./romdumper.py -l 
--> this will print the list of all the categories and table names available from the definition file
+````
+^^^ this will print the list of all the categories and table names available from the definition file
 
 ````
 ...
@@ -31,8 +33,9 @@ Usage:
 
 Pick a command from above and test it:
 
+````
 ./romdumper.py --category 'DBW - Throttle Position (Data Integrity)' --table-name 'APP to TP Desired - 2nd Gear'
-
+````
 
 Output should look like this:
 
@@ -77,4 +80,13 @@ APP to TP Desired - 2nd Gear
    90.00     90.00    90.00    90.00    90.00    90.00    90.00    90.00    90.00    90.00    90.00
 
   100.00    100.00   100.00   100.00   100.00   100.00   100.00   100.00   100.00   100.00   100.00
+````
+
+Dump all tables of the rom to file:
+
+````
+./romdumper.py -a
+Dumping all tables to file...
+Done!
+
 ````
