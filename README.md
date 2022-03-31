@@ -3,18 +3,18 @@ Quick (and poorly coded) python 3 script that dumps tables from MX-5 NC romdrop 
 
 If you use romdrop (https://github.com/speepsio/romdrop) and want to take a quick look at one of the tables in your NC rom without opening ecuflash, this might be the right tool for you.
 
-Required:
+## Required:
 - this repo
 - python3 ( tested on py 3.9.2 ) 
 - a patched rom (like: l831ef_Rev_2xxxx.bin ) BINARY ONLY  ( NOT .SRF )
 - the xml definition for the above binary (found romdrop/metada directory). l831ef.xml in this case
 
-Configuration:
+## Configuration:
 - clone the repo
 - edit romdumper.py
 - set paths to rom and definition
 
-Usage:
+## Usage:
 ````
 usage: romdumper.py [-h] {list-all,dump-table,dump-all,cli-dump-all} ...
 
@@ -33,7 +33,7 @@ optional arguments:
 ````
 
 
-List all categories and tables
+#### List all categories and tables
 
 ````
 ./romdumper.py list-all
@@ -52,7 +52,7 @@ Output:
 ````
 
 
-Pick a command from above and test it:
+#### Pick a command from above and test it:
 
 ````
 ./romdumper.py dump-table -c 'Spark Idle Limit' -n 'Spark Idle Limit '
@@ -92,7 +92,7 @@ Spark Idle Limit
 ````
 
 
-Dump all tables of the rom to file:
+#### Dump all tables of the rom to file:
 
 ````
 ./romdumper.py dump-all
@@ -100,11 +100,35 @@ Dumping all tables to file...
 Done!
 ````
 
-Dump all tables (all parameters specified from cli):
+#### Dump all tables (all parameters specified from cli):
 
 ````
 ./romdumper.py cli-dump-all -r roms/L831EG_Rev_xyz.bin -d metadata/l831eg.xml -o l831eg-ver-xyz-dump.txt
 Dumping all tables to file...
 Done!
 ````
+
+#### How to see what's changed between two roms ? 
+
+````
+pip install diffoscope
+````
+
+
+````
+diffoscope \
+	--max-report-size 0 \
+	--no-default-limits \
+	--max-diff-block-lines 0 \
+	dumps/L831EG_Rev_xxx0.TXT \
+	dumps/L831EG_Rev_xxx31.TXT \
+	--html-dir html/v0_to_v31/
+````
+
+Don't worry, diffoscope will create the output directory for you.
+
+Browse to the above directory and open index.html in your favorite browser.
+Click ... Open expanded diff ... at the bottom of the page.
+
+Adjust page zoom if necessary!
 
