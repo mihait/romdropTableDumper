@@ -96,9 +96,9 @@ class RomDumper():
     def list_category_and_name(self):
         for i in self.defs_json['roms']['rom']['table']:
             if self.verbose:
-                print("./romdumper.py --category '{}' --table-name '{}'  ###table type: {}".format(i['@category'], i['@name'], i['@type']))
+                print("./romdumper.py dump-table -c '{}' -n '{}'  ###table type: {}".format(i['@category'], i['@name'], i['@type']))
             else:
-                print("./romdumper.py --category '{}' --table-name '{}'".format(i['@category'], i['@name']))
+                print("./romdumper.py dump-table -c '{}' -n '{}'".format(i['@category'], i['@name']))
 
     def dump_table(self, category, name):
         for i in self.defs_json['roms']['rom']['table']:
@@ -213,4 +213,3 @@ class RomDumper():
                 print("---END---")
             sys.stdout = original_stdout
         print("Done!")
-
