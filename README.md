@@ -6,87 +6,105 @@ If you use romdrop (https://github.com/speepsio/romdrop) and want to take a quic
 Required:
 - this repo
 - python3 ( tested on py 3.9.2 ) 
-- a patched rom (like: l831ef_Rev_2xxxx.bin )
+- a patched rom (like: l831ef_Rev_2xxxx.bin ) BINARY ONLY  ( NOT .SRF )
 - the xml definition for the above binary (found romdrop/metada directory). l831ef.xml in this case
 
-Usage:
+Configuration:
 - clone the repo
 - edit romdumper.py
 - set paths to rom and definition
 
+Usage:
 ````
-./romdumper.py -l 
+usage: romdumper.py [-h] {list-all,dump-table,dump-all,cli-dump-all} ...
+
+romdrop table(s) dumper
+
+positional arguments:
+  {list-all,dump-table,dump-all,cli-dump-all}
+                        sub-command help
+    list-all            list all tables
+    dump-table          dump one table by category and name
+    dump-all            dump all tables using the rom/def/output files defined inside the script
+    cli-dump-all        dump all tables to file using command line specified parameters for rom/def/outfile
+
+optional arguments:
+  -h, --help            show this help message and exit
 ````
-^^^ this will print the list of all the categories and table names available from the definition file
+
+
+List all categories and tables
 
 ````
-...
-./romdumper.py --category 'DBW - Throttle Position Closed Limits' --table-name 'TP Closed - Default'
-./romdumper.py --category 'DBW - Throttle Position Closed Limits' --table-name 'TP Closed - Max'
-./romdumper.py --category 'DBW - Throttle Position Closed Limits' --table-name 'TP Closed - Min'
-./romdumper.py --category 'DBW - Throttle Position Commanded Limits' --table-name 'TP Commanded Limit - Max'
-./romdumper.py --category 'DBW - Throttle Position Commanded Limits' --table-name 'TP Commanded Limit - Min'
-./romdumper.py --category 'DBW - Throttle Angle' --table-name 'Throttle Angle - Max'
-./romdumper.py --category 'DBW - Throttle Angle' --table-name 'Throttle Angle - Conversion Multiplier'
-...
+./romdumper.py list-all
 ````
+
+Output:
+````
+./romdumper.py dump-table -c 'DBW - Cruise Control' -n 'CC Sensitivity - Non Gear'
+./romdumper.py dump-table -c 'DBW - Cruise Control' -n 'CC Sensitivity - 1st Gear'
+./romdumper.py dump-table -c 'DBW - Cruise Control' -n 'CC Sensitivity - 2nd Gear'
+./romdumper.py dump-table -c 'DBW - Cruise Control' -n 'CC Sensitivity - 3rd Gear'
+./romdumper.py dump-table -c 'DBW - Cruise Control' -n 'CC Sensitivity - 4th Gear'
+./romdumper.py dump-table -c 'DBW - Cruise Control' -n 'CC Sensitivity - 5th Gear'
+./romdumper.py dump-table -c 'DBW - Cruise Control' -n 'CC Sensitivity - 6th Gear'
+... and so on ...
+````
+
 
 Pick a command from above and test it:
 
 ````
-./romdumper.py --category 'DBW - Throttle Position (Data Integrity)' --table-name 'APP to TP Desired - 2nd Gear'
+./romdumper.py dump-table -c 'Spark Idle Limit' -n 'Spark Idle Limit '
 ````
 
 Output should look like this:
 
 ````
 Table dump
-APP to TP Desired - 2nd Gear
+Spark Idle Limit 
 ----
-      -x-      500     1000     1500     2000     2500     3000     4000     5000     6000     7000
+      -x-    0.125    0.188    0.250    0.312    0.375    0.438    0.500    0.562    0.625
 
-     0.0      0.00     0.00     0.00     0.00     0.00     0.00     0.00     0.00     0.00     0.00
+     500      5.50     5.50     5.00     4.00    -2.50    -6.00    -7.50   -10.50   -14.10
 
-     1.5      0.00     0.00     0.00     0.00     0.00     0.00     0.00     0.00     0.00     0.00
+     600      6.00     6.00     5.50     5.00    -1.00    -5.00    -6.00    -9.00   -12.50
 
-     5.0      5.00     5.00     5.00     5.00     5.00     5.00     5.00     5.00     5.00     5.00
+     700      8.00     8.00     8.00     6.00     0.00    -2.00    -4.00    -7.50   -11.00
 
-     7.5      7.50     7.50     7.50     7.50     7.50     7.50     7.50     7.50     7.50     7.50
+     800      8.00     8.00     8.00     7.00     2.00     1.00    -2.00    -6.00    -9.50
 
-    10.0     10.00    10.00    10.00    10.00    10.00    10.00    10.00    10.00    10.00    10.00
+     900      8.00     8.00     8.00     8.00     3.50     2.00     0.00    -3.00    -6.00
 
-    15.0     15.00    15.00    15.00    15.00    15.00    15.00    15.00    15.00    15.00    15.00
+    1000     12.00    12.00    12.00     9.00     5.00     3.00     1.00     0.00    -2.00
 
-    20.0     20.00    20.00    20.00    20.00    20.00    20.00    20.00    20.00    20.00    20.00
+    1100     14.00    14.00    13.00    10.00     6.00     4.00     2.00     1.00    -1.00
 
-    25.0     25.00    25.00    25.00    25.00    25.00    25.00    25.00    25.00    25.00    25.00
+    1200     16.00    16.00    14.00    11.00    10.00     8.00     6.00     5.00     3.50
 
-    30.0     30.00    30.00    30.00    30.00    30.00    30.00    30.00    30.00    30.00    30.00
+    1300     18.00    18.00    15.00    12.00    11.00     9.00     7.00     6.00     5.00
 
-    35.0     35.00    35.00    35.00    35.00    35.00    35.00    35.00    35.00    35.00    35.00
+    1400     18.50    18.50    15.50    13.00    11.50     9.50     8.00     7.00     6.00
 
-    40.0     40.00    40.00    40.00    40.00    40.00    40.00    40.00    40.00    40.00    40.00
+    1500     19.00    19.00    16.00    14.00    12.00    10.00     9.00     8.00     7.00
 
-    45.0     45.00    45.00    45.00    45.00    45.00    45.00    45.00    45.00    45.00    45.00
 
-    50.0     50.00    50.00    50.00    50.00    50.00    50.00    50.00    50.00    50.00    50.00
-
-    60.0     60.00    60.00    60.00    60.00    60.00    60.00    60.00    60.00    60.00    60.00
-
-    70.0     70.00    70.00    70.00    70.00    70.00    70.00    70.00    70.00    70.00    70.00
-
-    80.0     80.00    80.00    80.00    80.00    80.00    80.00    80.00    80.00    80.00    80.00
-
-    90.0     90.00    90.00    90.00    90.00    90.00    90.00    90.00    90.00    90.00    90.00
-
-   100.0    100.00   100.00   100.00   100.00   100.00   100.00   100.00   100.00   100.00   100.00
 ````
+
 
 Dump all tables of the rom to file:
 
 ````
-./romdumper.py -a
+./romdumper.py dump-all
 Dumping all tables to file...
 Done!
+````
+
+Dump all tables (all parameters specified from cli):
 
 ````
+./romdumper.py cli-dump-all -r roms/L831EG_Rev_xyz.bin -d metadata/l831eg.xml -o l831eg-ver-xyz-dump.txt
+Dumping all tables to file...
+Done!
+````
+
