@@ -11,6 +11,7 @@ If you use romdrop (https://github.com/speepsio/romdrop) and want to take a quic
 
 ## Configuration:
 - clone the repo
+- install dependencies (just one, xmltodict): sudo pip3 install -r requirements.txt
 
 If you wish to dump a certain table or list available tables in a rom
 
