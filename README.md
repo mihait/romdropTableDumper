@@ -7,12 +7,21 @@ If you use romdrop (https://github.com/speepsio/romdrop) and want to take a quic
 - this repo
 - python3 ( tested on py 3.9.2 ) 
 - a patched rom (like: l831ef_Rev_2xxxx.bin ) BINARY ONLY  ( NOT .SRF )
-- the xml definition for the above binary (found romdrop/metada directory). l831ef.xml in this case
+- the xml definition for the above binary (found in romdrop/metada directory). l831ef.xml in this case
 
 ## Configuration:
 - clone the repo
+
+If you wish to dump a certain table or list available tables in a rom
+
 - edit romdumper.py
 - set paths to rom and definition
+
+If you wish to dump all tables to file for multiple roms:
+
+- provide ags at runtime and dump all tables to file
+
+
 
 ## Usage:
 ````
@@ -92,7 +101,7 @@ Spark Idle Limit
 ````
 
 
-#### Dump all tables of the rom to file:
+#### Dump all tables of the rom defined inside the script to file:
 
 ````
 ./romdumper.py dump-all
