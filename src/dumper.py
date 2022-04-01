@@ -57,7 +57,7 @@ class RomDumper():
 
     def _mr_proper(self, value, type_format, expression):
         tfmt = self._translate_format(type_format)
-        x = value[0]
+        x = value
         if tfmt == '08x':
             return "{}".format(hex(x))
         elif tfmt == 'd':
@@ -82,7 +82,7 @@ class RomDumper():
 
         for i in range(int(data_len)):
             buff = struct.unpack(tfmt, tdata[n:n+tlen])
-            result.append(self._mr_proper(buff, tprops['format'], tprops['toexpr']))
+            result.append(self._mr_proper(buff[0], tprops['format'], tprops['toexpr']))
             n = n + tlen
 
         if len(result) == int(data_len):
