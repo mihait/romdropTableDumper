@@ -55,9 +55,8 @@ class RomDumper():
                         'endian': i['@endian']
                         }
 
-    def _mr_proper(self, value, type_format, expression):
+    def _mr_proper(self, x, type_format, expression):
         tfmt = self._translate_format(type_format)
-        x = value
         if tfmt == '08x':
             return "{}".format(hex(x))
         elif tfmt == 'd':
@@ -81,8 +80,8 @@ class RomDumper():
         tfmt = {'little': "<", 'big': ">"}.get(tprops['endian']) + self._type_fmt(tprops['storagetype'])
 
         for i in range(int(data_len)):
-            buff = struct.unpack(tfmt, tdata[n:n+tlen])
-            result.append(self._mr_proper(buff[0], tprops['format'], tprops['toexpr']))
+            buff = struct.unpack(tfmt, tdata[n:n+tlen])[0]
+            result.append(self._mr_proper(buff, tprops['format'], tprops['toexpr']))
             n = n + tlen
 
         if len(result) == int(data_len):
@@ -122,6 +121,12 @@ class RomDumper():
                 tr_data.append(line)
         return tr_data
 
+    def _calibrate_just(self, table):
+        lmax = 0
+        for i in table:
+            lmax = len(str(i)) if len(str(i)) > lmax else lmax
+        return lmax
+
     def _dump_1d(self, data, name):
         print("\nTable dump\n%s\n----" % name)
         for i in data:
@@ -144,25 +149,25 @@ class RomDumper():
         print("\nTable dump\n%s\n----" % name)
         
         tr_data = self._order_table(table_data, x_data, y_data, swapxy)
-    
-        rjst = 9
-        #print table
-        print("-x-".rjust(rjst), end='')
 
-        # x axis top
+        (rv,rx,ry) = (self._calibrate_just(table_data), self._calibrate_just(x_data), self._calibrate_just(y_data))
+        rjust = max(rv, rx, ry) + 1
+
+        print("-x-".rjust(rjust), end='')
         for i in x_data:
-            print("{}".format(i).rjust(rjst), end = '')
+            print("{}".format(i).rjust(rjust), end = '')
         print("\n")
 
         z = 0
         for j in y_data:
-            print("{} ".format(y_data[z]).rjust(rjst), end ='')
+            print("{} ".format(y_data[z]).rjust(rjust), end ='')
             a = tr_data[z]
             for l in a:
-                print("{}".format(l).rjust(rjst), end='')
+                print("{}".format(l).rjust(rjust), end='')
             print("\n")
             z+=1
         return
+
 
     def dump_table(self, category, name):
         for i in self.defs_json['roms']['rom']['table']:
