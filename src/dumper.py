@@ -26,7 +26,7 @@ class RomDumper():
                 '%0.3f': ".3f",
                 '%0.4f': ".4f",
                 '%08x' : "08x",
-                '%d':    ".0f"}.get(tformat, '.3f')
+                '%d':    "d"}.get(tformat, '.3f')
 
     def _type_len(self, tlen):
         return {
@@ -55,6 +55,16 @@ class RomDumper():
                         'endian': i['@endian']
                         }
 
+    def _mr_proper(self, value, type_format, expression):
+        tfmt = self._translate_format(type_format)
+        x = value[0]
+        if tfmt == '08x':
+            return "{}".format(hex(x))
+        elif tfmt == 'd':
+            return "{:{tfmt}}".format(int(eval(expression)), tfmt = tfmt)
+        else:
+            return "{:{tfmt}}".format(float(eval(expression)), tfmt = tfmt)
+
     def _get_table_data(self, data_addr, data_len, scaling):
 
         tprops = self._get_scaling_props(scaling)
@@ -72,14 +82,7 @@ class RomDumper():
 
         for i in range(int(data_len)):
             buff = struct.unpack(tfmt, tdata[n:n+tlen])
-            if tprops['format'] == '%08x':
-                result.append(hex(buff[0]))
-            elif tprops['format'] == '%d':
-                x = int(buff[0])
-                result.append(eval(tprops['toexpr']))
-            else:
-                x = float(buff[0])
-                result.append(eval(tprops['toexpr']))
+            result.append(self._mr_proper(buff, tprops['format'], tprops['toexpr']))
             n = n + tlen
 
         if len(result) == int(data_len):
@@ -100,6 +103,67 @@ class RomDumper():
             else:
                 print("./romdumper.py dump-table -c '{}' -n '{}'".format(i['@category'], i['@name']))
 
+
+    def _order_table(self, table_data, x, y, swapxy):
+        tr_data=[]
+        if swapxy == 'true':
+            for i in range(len(y)):
+                line=[]
+                k = i
+                for j in range(len(x)):
+                    line.append(table_data[k])
+                    k+=len(y)
+                tr_data.append(line)
+        else:
+            for i in range(len(y)):
+                line=[]
+                for j in range(len(x)):
+                    line.append(table_data[i+j])
+                tr_data.append(line)
+        return tr_data
+
+    def _dump_1d(self, data, name):
+        print("\nTable dump\n%s\n----" % name)
+        for i in data:
+            print(i)
+
+    def _dump_2d(self, table_data, axis_data, axis_name, name):
+        print("\nTable dump\n%s\n----" % name)
+        if axis_name == 'X Axis':
+            for i in axis_data:
+                print("{0:>6}".format(i), end = '')
+            print("")
+            for i in table_data:
+                print("{0:>6}".format(i), end = '')
+            print("")
+        else:
+            for i in range(len(axis_data)):
+                print(" {:>8} {:>5}".format(axis_data[i],table_data[i]))
+
+    def _dump_3d(self, table_data, x_data, y_data, swapxy, name):
+        print("\nTable dump\n%s\n----" % name)
+        
+        tr_data = self._order_table(table_data, x_data, y_data, swapxy)
+    
+        rjst = 9
+        #print table
+        print("-x-".rjust(rjst), end='')
+
+        # x axis top
+        for i in x_data:
+            print("{}".format(i).rjust(rjst), end = '')
+        print("\n")
+
+        z = 0
+        for j in y_data:
+            print("{} ".format(y_data[z]).rjust(rjst), end ='')
+            a = tr_data[z]
+            for l in a:
+                print("{}".format(l).rjust(rjst), end='')
+            print("\n")
+            z+=1
+        return
+
     def dump_table(self, category, name):
         for i in self.defs_json['roms']['rom']['table']:
             if i['@category'] == category and i['@name'] == name:
@@ -119,87 +183,25 @@ class RomDumper():
 
         #1D table
         if desired_table['@type'] == "1D":
-            tdfmt = self._table_format(desired_table['@scaling'])
-            print("\nTable dump\n%s\n----" % name)
-            for i in tdata:
-                if tdfmt == '08x':
-                    tdfmt = ''
-                print("{:{fmt}}".format(i, fmt=tdfmt))
+            self._dump_1d(tdata, name)
             return
 
         #2D table
         if desired_table['@type'] == "2D":
-            print("\nTable dump\n%s\n----" % name)
-            tdfmt = self._table_format(desired_table['@scaling'])
-
-            if desired_table['table']['@type'] == 'X Axis':
-                xdata = self._get_table_data(data_addr = desired_table['table']['@address'], data_len = desired_table['table']['@elements'], scaling = desired_table['table']['@scaling'])
-                xtfmt = self._table_format(desired_table['table']['@scaling'])
-                for i in xdata:
-                    print("{0:>6{fmt}}".format(i,fmt=xtfmt), end = '')
-                print("")
-                for i in tdata:
-                    print("{0:>6{fmt}}".format(i,fmt=tdfmt), end = '')
-                print("")
-                return
-            if desired_table['table']['@type'] == 'Y Axis':
-                ydata = self._get_table_data(data_addr = desired_table['table']['@address'], data_len = desired_table['table']['@elements'], scaling = desired_table['table']['@scaling'])
-                ytfmt = self._table_format(desired_table['table']['@scaling'])
-                for i in range(len(ydata)):
-                    print(" {:>8{fmt}}".format(ydata[i], fmt=ytfmt), end = '')
-                    print(" {:>5{fmt}}".format(tdata[i], fmt=tdfmt))
-                return
+            axis_name = desired_table['table']['@type']
+            axis_data = self._get_table_data(data_addr = desired_table['table']['@address'], data_len = desired_table['table']['@elements'], scaling = desired_table['table']['@scaling'])
+            self._dump_2d(tdata, axis_data, axis_name, name)
+            return
 
         #3D table
         if desired_table['@type'] == "3D":
-            print("\nTable dump\n%s\n----" % name)
             for t in desired_table['table']:
                 if t['@type'] == 'X Axis':
-                    xdata = self._get_table_data(data_addr = t['@address'], data_len = t['@elements'], scaling = t['@scaling'])
-                    xtfmt = self._table_format(t['@scaling'])
+                    x_data = self._get_table_data(data_addr = t['@address'], data_len = t['@elements'], scaling = t['@scaling'])
                 if t['@type'] == 'Y Axis':
-                    ydata = self._get_table_data(data_addr = t['@address'], data_len = t['@elements'], scaling = t['@scaling'])
-                    ytfmt = self._table_format(t['@scaling'])
-
-            tdfmt = self._table_format(desired_table['@scaling'])
-
-            tr_data=[]
-
-            if desired_table['@swapxy'] == 'true':
-                #
-                for i in range(len(ydata)):
-                    line=[]
-                    k = i
-                    for j in range(len(xdata)):
-                        line.append("{:{fmt}}".format(tdata[k], fmt = tdfmt))
-                        k+=len(ydata)
-                    tr_data.append(line)
-            else:
-                for i in range(len(ydata)):
-                    line=[]
-                    for j in range(len(xdata)):
-                        line.append("{:{fmt}}".format(tdata[i+j], fmt = tdfmt))
-                    tr_data.append(line)
-                print(tr_data)
-
-            rjst = 9
-            #print table
-            print("-x-".rjust(rjst), end='')
-
-            # x axis top
-            for i in xdata:
-                print("{:{fmt}}".format(i, fmt=xtfmt).rjust(rjst), end = '')
-            print("\n")
-
-            z = 0
-            for j in ydata:
-                print("{:{fmt}} ".format(ydata[z], fmt=ytfmt).rjust(rjst), end ='')
-                a = tr_data[z]
-                for l in a:
-                    print("{}".format(l).rjust(rjst), end='')
-                print("\n")
-                z+=1
-            return
+                    y_data = self._get_table_data(data_addr = t['@address'], data_len = t['@elements'], scaling = t['@scaling'])
+            swapxy = desired_table['@swapxy'] 
+            self._dump_3d(tdata, x_data, y_data, swapxy, name)
 
 
     def dump_all(self, filename):
@@ -213,3 +215,4 @@ class RomDumper():
                 print("---END---")
             sys.stdout = original_stdout
         print("Done!")
+
