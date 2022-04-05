@@ -5,10 +5,11 @@ import sys
 
 class RomDumper():
 
-    def __init__(self, rom_file, xml_def_file, verbose = False):
+    def __init__(self, rom_file, xml_def_file, verbose = False, csv_delimiter = ''):
         self.rom_file = rom_file
         self.xml_def_file = xml_def_file
         self.verbose = verbose
+        self.csv_delimiter = csv_delimiter
 
         #load rom
         with open(self.rom_file, 'rb') as r:
@@ -133,38 +134,42 @@ class RomDumper():
             print(i)
 
     def _dump_2d(self, table_data, axis_data, axis_name, name):
+        csv = self.csv_delimiter
         print("\nTable dump\n%s\n----" % name)
         if axis_name == 'X Axis':
             for i in axis_data:
-                print("{0:>6}".format(i), end = '')
+                print("{0:>6}{}".format(i, csv), end = '')
             print("")
             for i in table_data:
-                print("{0:>6}".format(i), end = '')
+                print("{0:>6}{}".format(i, csv), end = '')
             print("")
         else:
             for i in range(len(axis_data)):
-                print(" {:>8} {:>5}".format(axis_data[i],table_data[i]))
+                print(" {:>8}{} {:>5}".format(axis_data[i], csv, table_data[i]))
 
     def _dump_3d(self, table_data, x_data, y_data, swapxy, name):
+        csv = self.csv_delimiter
+
         print("\nTable dump\n%s\n----" % name)
-        
+
         tr_data = self._order_table(table_data, x_data, y_data, swapxy)
 
         (rv,rx,ry) = (self._calibrate_just(table_data), self._calibrate_just(x_data), self._calibrate_just(y_data))
         rjust = max(rv, rx, ry) + 1
-
-        print("-x-".rjust(rjust), end='')
+        if csv:
+            rjust+=1
+        print("-x-{}".format(csv).rjust(rjust), end='')
         for i in x_data:
-            print("{}".format(i).rjust(rjust), end = '')
-        print("\n")
+            print("{}{}".format(i,csv).rjust(rjust), end = '')
+        print("")
 
         z = 0
         for j in y_data:
-            print("{} ".format(y_data[z]).rjust(rjust), end ='')
+            print("{}{} ".format(y_data[z], csv).rjust(rjust), end ='')
             a = tr_data[z]
             for l in a:
-                print("{}".format(l).rjust(rjust), end='')
-            print("\n")
+                print("{}{}".format(l, csv).rjust(rjust), end='')
+            print("")
             z+=1
         return
 
@@ -205,7 +210,7 @@ class RomDumper():
                     x_data = self._get_table_data(data_addr = t['@address'], data_len = t['@elements'], scaling = t['@scaling'])
                 if t['@type'] == 'Y Axis':
                     y_data = self._get_table_data(data_addr = t['@address'], data_len = t['@elements'], scaling = t['@scaling'])
-            swapxy = desired_table['@swapxy'] 
+            swapxy = desired_table['@swapxy']
             self._dump_3d(tdata, x_data, y_data, swapxy, name)
 
 
@@ -220,4 +225,3 @@ class RomDumper():
                 print("---END---")
             sys.stdout = original_stdout
         print("Done!")
-
